@@ -1,0 +1,311 @@
+Hosting vimhelp & reading_vimrc
+
+Docker,docker-gen, h2o, h2o-proxyを使ったボットホスティングのお話
+
+21 Oct 2015
+
+zchee - Koichi Shiraishi
+zchee.io at gmail.com
+
+* Who?
+
+.image ./vimconf2015/avatar.png 128 _
+.caption zchee
+
+- [[https://github.com/zchee][github/zchee]]
+- [[https://twitter.com/_zchee_][twitter/_zchee_]]
+
+最近 (neo) vim 使い始めました
+
+- (neo) vim
+- Docker
+- Go
+
+* まずは
+
+* VimではなくてVim-jpのBotに関する内容です
+Vim-jpのBotがどうホストされているかを書きました
+
+Botのことを書いていたら最終的にDockerの話になってしまいました
+
+LTということでどうかひとつ
+
+* ちなみにちゃんとnvimで書いてます
+
+.image vimconf2015/nvim.png 1200 _
+
+* 気を取り直し
+
+* What is vimhelp & reading_vimrc?
+
+* vimhelp Bot
+lingr.comで
+
+	:help hoge
+
+とメッセージするとvimのヘルプを返すbot
+
+* reading_vimrc Bot
+同じくlingr.comで、vim読書会のデータなどをよしなにやってくれるbot
+.image ./vimconf2015/ss-1.png 256 _
+
+.image ./vimconf2015/bot.png _ _
+謎の覆面のこいつ
+
+* このBotたちをホストしています
+
+* なんでホストしたのか
+
+* なんでホストしたのか
+
+- 以前のBotたちはHerokuで動いていて、無料枠の条件が変わってたまに死んでた
+- かくかくしかじかで、だれも権限ないのでデバッグつらい
+- Vim読書会がある土曜日に動いてないと困る
+という経緯を外から見ていて。。。
+
+* なんでホストしたのか
+
+ならば、日ごろお世話になってるし、AWS余ってるのでホストしよう。
+　　↓
+普通にホストもいいけど、どうせならDocker使いたい
+　　↓
+あと [[http://zchee.io][zchee.io]] のサブドメイン使いたい （hoge.zchee.io）
+　　↓
+docker run ひとつで全部やってくれると *かっこよさそう！*
+
+＿人人人人人人人人人人人人人人人＿
+＞　　　 *かっこよさそう！* 　 　　＜
+￣ＹＹＹＹＹＹＹＹＹＹＹＹＹＹＹ￣
+
+大事です
+
+* なにで動いてるか
+
+* なにで動いてるか
+
+- [[https://github.com/docker/docker][docker]]
+最近流行りのコンテナ技術
+
+- [[https://github.com/h2o/h2o][h2o]]
+DeNA @kazuhoさん主導で開発されている、来るhttp2時代を先行するHTTP server
+
+- [[https://github.com/jwilder/docker-gen][docker-gen]]
+Dockerコンテナのメタデータを使って、テンプレートに従ってファイル生成をする
+
+- [[http://search.cpan.org/~kazuho/Server-Starter-0.09/start_server][Server::Starter]]
+h2oに標準で含まれるスクリプト
+サーバーのhot deployを実現する、kazuhoさん作、Perl製のおなじみのあれです
+
+* それらをまとめて
+
+- [[https://github.com/zchee/h2o-proxy][zchee/h2o-proxy]]
+
+今回のBotのために作りました
+
+- バックエンドにh2o
+- 内部にdocker-gen
+- 再起動にServer::Starter
+
+を使い、Dockerコンテナを監視しつつ自動でリバースプロキシするもの
+
+同じもので[[https://github.com/jwilder/nginx-proxy][nginx-proxy]]というものがありますが、それのh2o版です
+
+* 動かしかた
+いたって簡単で、
+
+h2o-proxyの起動
+
+	1. docker run -d -p 80:80 -v /var/run/docker.sock:/tmp/docker.sock:ro zchee/h2o-proxy
+
+なんらかのコンテナ（ここではvimhelp-jp）の起動
+
+	2. docker run -d -e VIRTUAL_HOST=vimhelp-jp.zchee.io -e VIRTUAL_PORT=80 zchee/vimhelp-jp
+
+たったの２コマンドで、Dockerインスタンス立ち上がって
+
+[[http://vimhelp-jp.zchee.io][vimhelp-jp.zchee.io]]
+
+にアクセスできるようになります
+
+* どうなってるのか
+
+# * h2o-proxyの内部
+# 画像
+
+# * ではいきます
+
+* foreman, forego ...
+
+	1. docker run -d -p 80:80 -v /var/run/docker.sock:/tmp/docker.sock:ro zchee/h2o-proxy
+
+このコマンドは、はじめにProcfileを元にコマンドを起動します
+
+* h2o-proxyのProcfile
+
+なんとなく覚えておいてください
+
+	h2o: /usr/local/share/h2o/start_server \
+				--port 0.0.0.0:80 \
+				--pid-file=/var/run/h2o/h2o.pid \
+				--status-file=/var/run/h2o/h2o_status \
+				-- /usr/local/bin/h2o -c /etc/h2o/h2o.conf
+
+	dockergen: docker-gen -watch \
+				-only-exposed \
+				-notify "/usr/local/share/h2o/start_server --restart --port 0.0.0.0:80 ...（省略） \
+				/app/h2o.tmpl \
+				/etc/h2o/h2o.conf
+
+いにしえからよく使われるProcfileです
+
+Dockerでも同時起動したいときは結構使われてました
+
+
+* 先ほどの２コマンド
+
+	1. docker run -d -p 80:80 -v /var/run/docker.sock:/tmp/docker.sock:ro zchee/h2o-proxy
+	2. docker run -d -e VIRTUAL_HOST=vimhelp-jp.zchee.io -e VIRTUAL_PORT=80 zchee/vimhelp-jp
+
+説明していきます
+
+* h2o-proxyが、全てのDockerコンテナを監視
+
+	1. docker run -d -p 80:80 -v /var/run/docker.sock:/tmp/docker.sock:ro zchee/h2o-proxy
+
+この１番目のコマンド、
+
+- /var/run/docker.sock
+Docker がデフォルトで使うこの Unix socket を乗っ取っていることによって、
+
+h2o-proxy が全ての Docker の動きを把握できます
+
+
+* 新しくコンテナを立てると、docker-genのHookが発動
+
+	2. docker run -d -e VIRTUAL_HOST=vimhelp-jp.zchee.io -e VIRTUAL_PORT=80 zchee/vimhelp-jp
+
+この２番目のコマンド、
+
+- `VIRTUAL_HOST` or `VIRTUAL_PORT`
+
+これらが設定されていると、h2o-proxyの内部にあるdocker-genがそれを感知し、Hookが発動します
+
+* docker-gen Hook
+
+そのHookとは
+
+Goのテンプレートエンジンを使い.tmplファイルを元に任意のファイルを生成するもの
+
+生成した内容としては、こんな感じ
+
+* h2o.tmpl
+
+.code vimconf2015/h2o.tmpl
+これが
+
+* h2o.conf
+
+.code vimconf2015/h2o.conf
+こうなります
+
+なんとなくわかってください
+
+完全版はこちら
+[[https://github.com/zchee/h2o-proxy/blob/master/h2o.tmpl][h2o.tmpl]]
+[[https://github.com/zchee/h2o-proxy/blob/master/h2o.conf][h2o.conf]]
+
+* h2oのリロード
+もう設定ファイルは勝手に作ってくれたので、あとはh2oに読み込ませるだけ
+
+再起動が一番てっとりばやい
+
+そこで使うのが
+
+- docker-gen notify hook
+
+	docker-gen ... -notify "...
+
+docker-genには、ファイル生成した後に任意のコマンドを実行する機能がある
+
+* docker-gen notify hook
+そこに、h2oを再起動させるコマンドを入れれば…
+
+	docker-gen -notify "/usr/local/share/h2o/start_server --restart ...
+
+先ほどの Procfile にある通り、そもそも start_server で h2o を起動しています
+
+なので、 `--restart` フラグをつけて再度実行すればリスタートするわけです
+
+	start_server:
+		--restart
+			サーバをhot deployするためのフラグ
+			start_serverのプロセスIDを--pid-fileから読み込んでSIGHUPを送信
+			--status-fileをチェックしてdeploy前のサーバがdieするまでwait
+
+
+	// Procfile
+	h2o: /usr/local/share/h2o/start_server \
+				--port 0.0.0.0:80 \
+				--pid-file=/var/run/h2o/h2o.pid \
+				--status-file=/var/run/h2o/h2o_status \
+				-- /usr/local/bin/h2o -c /etc/h2o/h2o.conf
+
+* Reverse proxy
+
+.code vimconf2015/h2o.conf
+
+生成された設定ファイルにて、 [[http://vimhelp-jp.zchee.io][vimhelp-jp.zchee.io]] にリバースされてますので、
+
+あらかじめRoute53 なりでサブドメインにEC2のIPを振っておけば（手動）。。。
+
+もうつながってます
+
+* おさらい
+- h2o-proxyをまず起動
+- 他のコンテナ起動
+- 環境変数を発見したらh2o-proxyが自身で設定書き換えてサーバーリスタート
+- 一度やったらほっといても大丈夫！
+
+まさにBotのために作られたような構造です（実際そう）
+
+* If ...?
+
+- もしVIRTUAL_HOSTが重複してたら、あとのものに勝手に差し替えてくれます
+- Sinatraが5000で起動するのであれば、VIRTUAL_PORTに5000を指定すればOK
+- docker runオプションに --restart=always をつけて保険をかけてるので、AWSがなくならない限り生き続けます
+- 環境変数なので、docker-compose.ymlに書いても有効です
+
+* 弱点
+
+* 弱点
+
+.image vimconf2015/lingr.png 100 _
+
+凝りすぎましたすみません
+
+* さいごに
+
+内部構造は少々こみいってますが。。。
+
+Dockerを知らなくとも、
+
+一度覚えればBotの管理には便利なのでぜひ使ってみてください
+
+[[https://github.com/zchee/h2o-proxy][zchee/h2o-proxy]]
+
+* スライドについて
+
+なお、このスライドは
+
+	go get golang.org/x/tools/cmd/present
+	git clone http://github.com/zchee/talks
+	cd talks
+	present
+
+で [[http://localhost:3999/vimconf2015.slide][http://localhost:3999/vimconf2015.slide]] にてご覧いだだけます
+
+また、そのうち [[http://talks.zchee.io][http://talks.zchee.io]] でもホストいたします
+
+興味がありましたら、[[https://github.com/zchee/h2o-proxy][zchee/h2o-proxy]]レポジトリとともにご覧ください
+
+* ご清聴ありがとうございました
