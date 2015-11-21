@@ -24,7 +24,7 @@ zchee.io at gmail.com
 * まずは
 
 * VimではなくてVim-jpのBotに関する内容です
-Vim-jpのBotがどうホストされているかを書きました
+*Vim-jp* のBotがどうホストされているかを書きました
 
 Botのことを書いていたら最終的にDockerの話になってしまいました
 
@@ -44,6 +44,8 @@ lingr.comで
 	:help hoge
 
 とメッセージするとvimのヘルプを返すbot
+
+.image vimconf2015/help.png 256 _
 
 * reading_vimrc Bot
 同じくlingr.comで、vim読書会のデータなどをよしなにやってくれるbot
@@ -72,6 +74,8 @@ lingr.comで
 あと [[http://zchee.io][zchee.io]] のサブドメイン使いたい （hoge.zchee.io）
 　　↓
 docker run ひとつで全部やってくれると *かっこよさそう！*
+
+* なんでホストしたのか
 
 ＿人人人人人人人人人人人人人人人＿
 ＞　　　 *かっこよさそう！* 　 　　＜
@@ -113,11 +117,11 @@ h2oに標準で含まれるスクリプト
 * 動かしかた
 いたって簡単で、
 
-h2o-proxyの起動
+- h2o-proxyの起動
 
 	1. docker run -d -p 80:80 -v /var/run/docker.sock:/tmp/docker.sock:ro zchee/h2o-proxy
 
-なんらかのコンテナ（ここではvimhelp-jp）の起動
+- なんらかのコンテナ（ここではvimhelp-jp）の起動
 
 	2. docker run -d -e VIRTUAL_HOST=vimhelp-jp.zchee.io -e VIRTUAL_PORT=80 zchee/vimhelp-jp
 
@@ -199,14 +203,14 @@ Goのテンプレートエンジンを使い.tmplファイルを元に任意の�
 生成した内容としては、こんな感じ
 
 * h2o.tmpl
-
-.code vimconf2015/h2o.tmpl
 これが
 
+.code vimconf2015/h2o.tmpl
+
 * h2o.conf
+こうなります
 
 .code vimconf2015/h2o.conf
-こうなります
 
 なんとなくわかってください
 
