@@ -279,6 +279,8 @@ docker-genには、ファイル生成した後に任意のコマンドを実行�
 - docker runオプションに --restart=always をつけて保険をかけてるので、AWSがなくならない限り生き続けます
 - 環境変数なので、docker-compose.ymlに書いても有効です
 
+* デモ？
+
 * 弱点
 
 * 弱点
