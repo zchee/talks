@@ -47,12 +47,16 @@ lingr.comで
 
 .image vimconf2015/help.png 256 _
 
+元は osyo-manga/vimhelp-jp さんのものをフォークしました
+
 * reading_vimrc Bot
 同じくlingr.comで、vim読書会のデータなどをよしなにやってくれるbot
 .image ./vimconf2015/ss-1.png 256 _
 
 .image ./vimconf2015/bot.png _ _
 謎の覆面のこいつ
+
+元は osyo-manga/lingr-bot-reading_vimrc さんのものをフォークしました
 
 * このBotたちをホストしています
 
@@ -132,11 +136,6 @@ h2oに標準で含まれるスクリプト
 にアクセスできるようになります
 
 * どうなってるのか
-
-# * h2o-proxyの内部
-# 画像
-
-# * ではいきます
 
 * foreman, forego ...
 
@@ -292,8 +291,6 @@ docker-genには、ファイル生成した後に任意のコマンドを実行�
 * さいごに
 
 内部構造は少々こみいってますが。。。
-
-Dockerを知らなくとも、
 
 一度覚えればBotの管理には便利なのでぜひ使ってみてください
 
