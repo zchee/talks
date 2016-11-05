@@ -125,6 +125,10 @@ gocodeをsubprocessで叩く、Go用のソース
 
 .iframe http://localhost:8003/ 600 1000
 
+* deoplete is the bomb
+
+.image vimconf2016/deoplete_is_the_bomb.png 512 _
+
 * deoplete sources - おわりに
 
 - あとはzsh, Dockerfile用などいくつか作りましたが、やっつけなので紹介しません
