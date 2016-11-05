@@ -1,0 +1,211 @@
+deoplete sources and nvim-go
+deopleteのソース紹介とGoでvim-goをスクラッチした話
+05 Nov 2016
+Tags: neovim, deoplete, go, c, python, vim-go
+
+zchee
+-
+zchee.io at gmail.com
+https://github.com/zchee
+@_zchee_
+
+* Who?
+
+.image vimconf2016/avatar.png 128 _
+.caption zchee
+
+- [[https://github.com/zchee][github/zchee]]
+- [[https://twitter.com/_zchee_][twitter/_zchee_]]
+
+１年前から (neo) vim 使い始めました
+
+- (neo) vim
+- Docker
+- Go
+- (ちょっと) Hypervisor
+
+* アジェンダ
+
+* アジェンダ
+
+- deoplete sources の紹介
+- neovim専用に vim-go をGoでスクラッチした [[https://github.com/zchee/nvim-go][nvim-go]] の話
+
+* deoplete sources
+
+* deoplete sources
+
+- [[https://github.com/Shougo/deoplete.nvim][deoplete.nvim]] とは
+- deoplete.nvimのソースはどんな感じなのか
+- *Python* : [[https://github.com/zchee/deoplete-jedi][deoplete-jedi]]
+- *C* *family* : [[https://github.com/zchee/deoplete-clang][deoplete-clang]]
+- *Go* : [[https://github.com/zchee/deoplete-go][deoplete-go]]
+
+* deoplete.nvim とは
+
+* deoplete.nvim とは
+
+- [[https://github.com/Shougo/deoplete.nvim][Shougo/deoplete.nvim]]
+
+🌠 Dark powered asynchronous completion framework for neovim
+
+Shougoさんが去年のvimconfで発表された、Neovimの特性を最大限生かした
+非同期補完フレームワーク
+
+コア部分はPython3で実装されていて、やたら速いです
+
+* 既にみなさまはご存知でしょう ( 想定 )
+
+* deoplete.nvimのソースはどんな感じなのか
+
+* 実はとりあえず動かすだけなら非常に簡単
+
+* 実はとりあえず動かすだけなら非常に簡単
+
+- Python3 で書ける
+
+- さすがのPython、なんでもできる
+
+- deopleteのために初めてPythonを触ったぼくでも書けたので、なんとかなる
+
+- subprocess しようが threading しようがやりたい放題
+
+- さらにはNumpyとかTensorFlowとかいいんじゃないですかね（よくしらない）
+
+* 例:
+
+.code vimconf2016/go.py
+
+これが最初期のGo用のソースのすべて
+ぶっちゃけこれでも動きます
+
+* とりあえずバイナリ叩くかRPCすればなんとかなる
+
+* もし Python binding があればもう楽勝
+
+* な時もある
+
+* つくったソースたちの紹介
+
+* つくったソースたちの紹介
+
+開発してるソースたちを、デモ中心に紹介させてください
+
+- *Python* : [[https://github.com/zchee/deoplete-jedi][deoplete-jedi]]
+- *C* *family* : [[https://github.com/zchee/deoplete-clang][deoplete-clang]]
+- *Go* : [[https://github.com/zchee/deoplete-go][deoplete-go]]
+
+* deoplete-jedi
+
+[[https://github.com/zchee/deoplete-jedi][zchee/deoplete-jedi]]
+
+Python用の補完エンジンjediを使って、Pythonで書いたPythonのためのソース
+
+* deoplete-jedi demo
+
+.iframe http://localhost:8001/ 700 1300
+
+* deoplete-clang
+
+[[https://github.com/zchee/deoplete-clang][zchee/deoplete-clang]]
+
+LLVM libclang-pythonのPython3ポートを使った、C 系のためのソース
+
+* deoplete-clang demo
+
+.iframe http://localhost:8002/ 600 1000
+
+* deoplete-go
+
+[[https://github.com/zchee/deoplete-go][zchee/deoplete-go]]
+
+gocodeをsubprocessで叩く、Go用のソース
+
+* deoplete-go demo
+
+.iframe http://localhost:8003/ 600 1000
+
+* deoplete sources - おわりに
+
+- あとはzsh, Dockerfile用などいくつか作りましたが、やっつけなので紹介しません
+
+- とりあえずソースは簡単に作れるので、まだサポートされてない言語のソース書いてみてはいかがでしょうか？
+
+- じぶんで書いたソースで高速に補完できたりすると、結構嬉しいしかなり楽です
+
+* つぎ
+
+* neovim専用に vim-go をGoでスクラッチした nvim-go の話
+
+* nvim-go
+
+- Go development plugin for Neovim
+- どうやってGoでNeovimのプラグインを書けるのか
+- 今のところの状況
+- demo
+
+* Go development plugin for Neovim
+
+* Go development plugin for Neovim
+
+- vim scriptで書かれたvim-goを、vimとGoの勉強のためにGoで書き直したもの
+- Neovimのmsgpack-rpc依存なので、こちらもNeovim専用です
+- バイナリ叩かないといけないとこ(astとか)を、じぶんでパースしてそのまま出力できるので拡張するの楽しいです
+- いまのところは、とりあえずvim-goコンパチにするようにがんばってます
+- Delve debugger interface : )
+
+* どうやってGoでNeovimのプラグインを書けるのか
+
+* どうやってGoでNeovimのプラグインを書けるのか
+
+[[https://github.com/neovim/go-client][neovim/go-client]]
+
+gorilla系やredigo、godoc.orgの元を書いた(?) [[https://github.com/garyburd][@garyburd]] 氏謹製
+
+独自実装のmsgpackバインディングを使って、Neovimと通信します
+
+コンパイルしたバイナリがデーモンとしてユーザーとNeovimのあいだにいて、命令を中継してくれるイメージ
+
+Goの利点のひとつ、goroutineを使えるので、がんがん非同期で動きます
+
+* どうやってGoでNeovimのプラグインを書けるのか
+
+[[https://github.com/neovim/go-client][neovim/go-client]] README抜粋
+
+hello.go
+
+.code vimconf2016/client.go
+
+* どうやってGoでNeovimのプラグインを書けるのか
+
+[[https://github.com/neovim/go-client][neovim/go-client]] README抜粋
+
+plugin/hello.vim
+
+.code vimconf2016/client.vim
+
+* Helloしたかったけど動かないのであとでPRします
+
+* nvim-goの今のところの状況
+
+* nvim-goの今のところの状況
+
+.link https://github.com/zchee/nvim-go/blob/master/TODO.md#command-diff-list github.com/zchee/nvim-go/TODO.md
+
+* nvim-go demo
+
+* スライドについて
+
+なお、このスライドは
+[[http://go-talks.appspot.com/github.com/zchee/talks/vimconf2016.slide][go-talks.appspot.com/github.com/zchee/talks/vimconf2016.slide]]
+
+あるいは
+
+	go get -u golang.org/x/tools/cmd/present
+	go get -u -d github.com/zchee/talks
+	cd $GOPATH/src/github.com/zchee/talks
+	present
+
+で [[http://localhost:3999/vimconf2016.slide][http://localhost:3999/vimconf2016.slide]] にてご覧いだだけます
+
+* ご清聴ありがとうございました
